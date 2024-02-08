@@ -64,17 +64,41 @@ app.post('/students', (req, res) => {
 app.patch('/students/:id', (req, res) => {
     let std = req.body;
     let sql = `UPDATE students SET name = ?, class = ?, section = ?, contact = ? WHERE id = ?`
-    config.query(sql, [std.name, std.class, std.section, std.contact, req.params.id], (err, result) => {
+    config.query(sql, [std.name, std.class, std.section, std.contact, req.params.id], (err, rows) => {
         if (err) {
-            console.log(err);
-            // res.status(500).send("Error updating student");
+            // console.error("Error updating student:", err);
+            res.status(500).send("Error updating student");
         } else {
-            console.log("Student updated successfully");
-            res.status(200).send("Student updated successfully");
+            res.status(200).send(rows);
         }
     });
 });
+app.put('/students/:id', (req, res) => {
+    let std = req.body;
+    let sql = `UPDATE students SET name = ?, class = ?, section = ?, contact = ? WHERE id = ?`
+    config.query(sql, [std.name, std.class, std.section, std.contact, req.params.id], (err, rows) => {
+        if (err) {
+            console.log(err);
+        } else {
+            if(rows.affectedRows == 0)
+            {
+                let stdData = [std.name, std.class, std.section, std.contact]
 
+                config.query("INSERT INTO students (name, class, section, contact) VALUES (?)",[stdData], (err, rows) => {
+                    if(err){
+                        console.log(err);
+                    }
+                    else{
+                        console.log(rows);
+                        res.status(400).send(rows)
+                    }
+                })
+            }else{
+                res.status(200).send(rows);
+            }
+        }
+    });
+});
 
 
 
